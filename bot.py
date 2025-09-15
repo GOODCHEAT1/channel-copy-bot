@@ -88,8 +88,8 @@ def start(message):
     )
 
     markup = telebot.types.InlineKeyboardMarkup()
-    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 1", url="https://t.me/+ZUXtxXBzR_VkMjU1"))
-    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 2", url="https://t.me/+h9nxPe7_KAs3NGY1"))
+    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 1", url="https://t.me/promoters_botse"))
+    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 2", url="https://t.me/+DDOMcEbYh8RiZWFl"))
     markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 3", url="https://t.me/insta_mmsvip_videos_clips"))
     markup.add(telebot.types.InlineKeyboardButton("✅ Joined Channels", callback_data="check_join"))
 
