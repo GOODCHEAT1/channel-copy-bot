@@ -2,12 +2,11 @@ import telebot
 import random
 import os
 
-# === CONFIG ===
-BOT_TOKEN = 'YOUR_BOT_TOKEN'
-BUFFER_CHANNEL_ID = -1002608751179
-FORCE_JOIN_IDS = [-1002569411232]
-ADMIN_ID = 1209978813
-PHOTO_URL = 'https://envs.sh/hA0.jpg'
+## === CONFIG from ENV ===
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
+BUFFER_CHANNEL_ID = int(os.getenv("BUFFER_CHANNEL_ID"))
+PHOTO_URL = os.getenv("PHOTO_URL")
 
 PRIVACY_MESSAGE = """Privacy Policy for 18+ Bots
 
