@@ -138,7 +138,8 @@ def callback_query(call):
 
     elif call.data == "get_videos":
         async def fetch_all_videos():
-            client = TelegramClient("session", API_ID, API_HASH, bot_token=BOT_TOKEN)
+            client = TelegramClient("session", API_ID, API_HASH)
+await client.start(bot_token=BOT_TOKEN)
             await client.start()
             ids = []
             async for msg in client.iter_messages(BUFFER_CHANNEL_ID, reverse=True):  # पुराने से नए तक
