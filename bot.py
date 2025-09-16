@@ -157,20 +157,23 @@ def callback_query(call):
             bot.send_message(user_id, "🎉 You have joined all required channels!", reply_markup=markup)
 
     elif call.data == "get_videos":
-        video_ids = get_random_video_ids()
-        if not video_ids:
-            bot.send_message(user_id, "⚠️ No videos available currently.")
-            return
-        for vid in video_ids:
+    video_ids = get_random_video_ids()
+    if not video_ids:
+        bot.send_message(user_id, "⚠️ No videos available currently.")
+        return
+    for vid in video_ids:
+        try:
+            bot.copy_message(user_id, BUFFER_CHANNEL_ID, int(vid))
+            time.sleep(0.25)
+        except Exception as e:
+            print("copy_message error:", e)
             try:
-                bot.copy_message(user_id, BUFFER_CHANNEL_ID, int(vid))
-                time.sleep(0.25)
-            except Exception as e:
-                print("copy_message error:", e)
-                try:
-                    bot.send_message(user_id, f"⚠️ Couldn't fetch video {vid}")
-                except:
-                    pass
+                bot.send_message(user_id, f"⚠ Couldn't fetch video {vid}")
+            except:
+                pass
+    markup = telebot.types.InlineKeyboardMarkup()
+    markup.add(telebot.types.InlineKeyboardButton("📥 Get More Videos", callback_data="get_videos"))
+    bot.send_message(user_id, "📁 Here are your videos 🎬", reply_markup=markup)
         markup = telebot.types.InlineKeyboardMarkup()
         markup.add(telebot.types.InlineKeyboardButton("📹 Get More Videos", callback_data="get_videos"))
         bot.send_message(user_id, "🥳 Here are your videos 🎬", reply_markup=markup)
