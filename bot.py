@@ -1,19 +1,22 @@
-# bot.py
+
 import os
 import random
-import telebot
 import time
+import telebot
+import asyncio
+from telethon import TelegramClient
 
 # === CONFIG from ENV ===
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+API_ID = int(os.getenv("API_ID", "0"))         # my.telegram.org से लो
+API_HASH = os.getenv("API_HASH", "")          # my.telegram.org से लो
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-BUFFER_CHANNEL_ID = -1002963301599
+BUFFER_CHANNEL_ID = -1002963301599            # आपका video channel
 PHOTO_URL = os.getenv("PHOTO_URL", "https://envs.sh/hA0.jpg")
 FORCE_JOIN_IDS = [-1002547586103]
 
 # Files
 USERS_FILE = "users.txt"
-VIDEO_IDS_FILE = "video_ids.txt"
 REFERRALS_FILE = "referrals.txt"
 POINTS_FILE = "user_points.txt"
 
@@ -29,7 +32,7 @@ PRIVACY_MESSAGE = """Privacy Policy for 18+ Bots
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode=None)
 
 # === Ensure required files exist ===
-for file in [USERS_FILE, VIDEO_IDS_FILE, REFERRALS_FILE, POINTS_FILE]:
+for file in [USERS_FILE, REFERRALS_FILE, POINTS_FILE]:
     if not os.path.exists(file):
         open(file, "w").close()
 
@@ -71,26 +74,6 @@ def update_points(referred_by):
         for uid, pts in points.items():
             f.write(f"{uid} {pts}\n")
 
-# === Get Random Video IDs ===
-def get_random_video_ids(n=5):
-    all_ids = read_lines(VIDEO_IDS_FILE)
-    if not all_ids:
-        return []
-    return random.sample(all_ids, min(n, len(all_ids)))
-
-# === Save video ID from BUFFER_CHANNEL_ID ===
-@bot.channel_post_handler(content_types=['video', 'document'])
-def save_video_id(message):
-    try:
-        if message.chat.id == BUFFER_CHANNEL_ID:
-            # avoid duplicates
-            ids = set(read_lines(VIDEO_IDS_FILE))
-            if str(message.message_id) not in ids:
-                append_line(VIDEO_IDS_FILE, message.message_id)
-                print(f"✅ Saved video ID: {message.message_id}")
-    except Exception as e:
-        print("Error save_video_id:", e)
-
 # === /start handler ===
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -114,7 +97,6 @@ def start(message):
     )
 
     markup = telebot.types.InlineKeyboardMarkup()
-    # Put your actual channel invite links or leave placeholders
     markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 1", url="https://t.me/promoters_botse"))
     markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 2", url="https://t.me/+DDOMcEbYh8RiZWFl"))
     markup.add(telebot.types.InlineKeyboardButton("✅ Joined Channels", callback_data="check_join"))
@@ -122,15 +104,13 @@ def start(message):
     try:
         bot.send_photo(user_id, PHOTO_URL, caption=caption, parse_mode='Markdown', reply_markup=markup)
     except Exception as e:
-        try:
-            bot.send_message(user_id, caption, reply_markup=markup)
-        except:
-            print("Send welcome failed:", e)
+        bot.send_message(user_id, caption, reply_markup=markup)
 
 # === Callback handler ===
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     user_id = call.message.chat.id
+
     if call.data == "check_join":
         not_joined = []
         for channel in FORCE_JOIN_IDS:
@@ -157,26 +137,40 @@ def callback_query(call):
             bot.send_message(user_id, "🎉 You have joined all required channels!", reply_markup=markup)
 
     elif call.data == "get_videos":
-    video_ids = get_random_video_ids()
-    if not video_ids:
-        bot.send_message(user_id, "⚠️ No videos available currently.")
-        return
-    for vid in video_ids:
+        async def fetch_all_videos():
+            client = TelegramClient("session", API_ID, API_HASH, bot_token=BOT_TOKEN)
+            await client.start()
+            ids = []
+            async for msg in client.iter_messages(BUFFER_CHANNEL_ID, reverse=True):  # पुराने से नए तक
+                if msg.video:
+                    ids.append(msg.id)
+            await client.disconnect()
+            return ids
+
         try:
-            bot.copy_message(user_id, BUFFER_CHANNEL_ID, int(vid))
-            time.sleep(0.25)
+            video_ids = asyncio.run(fetch_all_videos())
         except Exception as e:
-            print("copy_message error:", e)
+            bot.send_message(user_id, f"⚠️ Error fetching videos: {e}")
+            return
+
+        if not video_ids:
+            bot.send_message(user_id, "⚠️ No videos found in channel.")
+            return
+
+        random.shuffle(video_ids)
+        sent = 0
+        for vid in video_ids[:5]:
             try:
-                bot.send_message(user_id, f"⚠ Couldn't fetch video {vid}")
-            except:
-                pass
-    markup = telebot.types.InlineKeyboardMarkup()
-    markup.add(telebot.types.InlineKeyboardButton("📥 Get More Videos", callback_data="get_videos"))
-    bot.send_message(user_id, "📁 Here are your videos 🎬", reply_markup=markup)
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.add(telebot.types.InlineKeyboardButton("📹 Get More Videos", callback_data="get_videos"))
-        bot.send_message(user_id, "🥳 Here are your videos 🎬", reply_markup=markup)
+                bot.copy_message(user_id, BUFFER_CHANNEL_ID, vid)
+                time.sleep(0.3)
+                sent += 1
+            except Exception as e:
+                print("copy_message error:", e)
+
+        if sent:
+            markup = telebot.types.InlineKeyboardMarkup()
+            markup.add(telebot.types.InlineKeyboardButton("📥 Get More Videos", callback_data="get_videos"))
+            bot.send_message(user_id, f"📁 Sent {sent} videos 🎬", reply_markup=markup)
 
     elif call.data == "privacy":
         bot.send_message(user_id, PRIVACY_MESSAGE)
@@ -189,7 +183,7 @@ def broadcast(message):
         return
 
     if not message.reply_to_message:
-        bot.send_message(ADMIN_ID, "⚠️ Reply to any message (text/photo/video/voice) with /broadcast to send to all users.")
+        bot.send_message(ADMIN_ID, "⚠️ Reply to any message with /broadcast to send to all users.")
         return
 
     users = read_lines(USERS_FILE)
@@ -203,12 +197,7 @@ def broadcast(message):
             pass
     bot.send_message(ADMIN_ID, f"✅ Broadcast sent to {sent} users.")
 
-# === Start function (do NOT auto-run on import) ===
+# === Start function (for Render) ===
 def start_bot():
-    """
-    Call this function to start the bot polling loop.
-    Do NOT call on import.
-    """
     print("Starting Telegram bot polling...")
-    # use long polling with a timeout to be robust on Render
     bot.polling(none_stop=True, interval=0, timeout=20)
