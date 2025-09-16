@@ -1,4 +1,3 @@
-
 import os
 import random
 import time
@@ -21,10 +20,10 @@ users_col = db["users"]
 
 PRIVACY_MESSAGE = """Privacy Policy for 18+ Bots
 
-1️⃣ Age Restriction: 18+ only
-2️⃣ No Personal Data Collection
-3️⃣ User Responsibility
-...
+1️⃣ Age Restriction: 18+ only  
+2️⃣ No Personal Data Collection  
+3️⃣ User Responsibility  
+...  
 🔟 Policy Changes can occur without notice.
 """
 
@@ -148,3 +147,6 @@ def broadcast(message):
 def start_bot():
     print("Starting Telegram bot polling...")
     bot.polling(none_stop=True, interval=0, timeout=20)
+
+if __name__ == "__main__":
+    start_bot()
