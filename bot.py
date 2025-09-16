@@ -1,4 +1,3 @@
-
 import os
 import random
 import time
@@ -103,7 +102,7 @@ def start(message):
 
     try:
         bot.send_photo(user_id, PHOTO_URL, caption=caption, parse_mode='Markdown', reply_markup=markup)
-    except Exception as e:
+    except Exception:
         bot.send_message(user_id, caption, reply_markup=markup)
 
 # === Callback handler ===
@@ -137,10 +136,10 @@ def callback_query(call):
             bot.send_message(user_id, "🎉 You have joined all required channels!", reply_markup=markup)
 
     elif call.data == "get_videos":
+
         async def fetch_all_videos():
             client = TelegramClient("session", API_ID, API_HASH)
-await client.start(bot_token=BOT_TOKEN)
-            await client.start()
+            await client.start(bot_token=BOT_TOKEN)
             ids = []
             async for msg in client.iter_messages(BUFFER_CHANNEL_ID, reverse=True):  # पुराने से नए तक
                 if msg.video:
