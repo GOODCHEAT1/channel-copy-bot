@@ -7,9 +7,9 @@ import time
 # === CONFIG from ENV ===
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-BUFFER_CHANNEL_ID = int(os.getenv("@pon_ponm", "0"))
+BUFFER_CHANNEL_ID = -1002963301599
 PHOTO_URL = os.getenv("PHOTO_URL", "https://envs.sh/hA0.jpg")
-FORCE_JOIN_IDS = [int(x) for x in os.getenv("1002547586103", "").split(",") if x.strip()]
+FORCE_JOIN_IDS = [-1002547586103]
 
 # Files
 USERS_FILE = "users.txt"
