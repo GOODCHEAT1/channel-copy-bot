@@ -1,19 +1,27 @@
+# server.py
 from flask import Flask
 import threading
-import bot  # apna main bot.py import karna
+import os
+import bot  # import your bot module
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
-    return "Bot is running fine ✅"
+    return "Bot is running ✅"
 
-def run_bot():
-    bot.bot.polling(none_stop=True, interval=0, timeout=20)
+def run_bot_thread():
+    try:
+        bot.start_bot()
+    except Exception as e:
+        print("Bot thread error:", e)
 
 if __name__ == "__main__":
-    # Bot alag thread me chalega
-    t = threading.Thread(target=run_bot)
+    # Start bot in background thread
+    t = threading.Thread(target=run_bot_thread, daemon=True)
     t.start()
-    # Flask server port 10000 par chalega (Render ke liye)
-    app.run(host="0.0.0.0", port=10000)
+
+    # Use Render's PORT env var (Render sets this automatically)
+    port = int(os.getenv("PORT", "10000"))
+    # Bind to 0.0.0.0 so external connections (Render) can reach it
+    app.run(host="0.0.0.0", port=port)
