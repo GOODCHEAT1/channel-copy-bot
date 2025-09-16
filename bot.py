@@ -115,8 +115,8 @@ def start(message):
 
     markup = telebot.types.InlineKeyboardMarkup()
     # Put your actual channel invite links or leave placeholders
-    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 1", url="https://t.me/example1"))
-    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 2", url="https://t.me/example2"))
+    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 1", url="https://t.me/promoters_botse"))
+    markup.add(telebot.types.InlineKeyboardButton("📣 Join Channel 2", url="https://t.me/+DDOMcEbYh8RiZWFl"))
     markup.add(telebot.types.InlineKeyboardButton("✅ Joined Channels", callback_data="check_join"))
 
     try:
